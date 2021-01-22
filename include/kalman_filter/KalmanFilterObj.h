@@ -6,11 +6,13 @@
 #include "opencv2/highgui.hpp"
 #include <opencv2/opencv.hpp>
 
+template <typename T>
 class KalmanFilterObj
 {
 public:
 	KalmanFilterObj(float freq, bool online);
-	void KalmanFilterCallback(const keypoint_3d_matching_msgs::Keypoint3d_list msg);
+	void KalmanFilterCallback(const T msg);
+	void Init();
 	void Init(int size);
 	bool is3D;
 	bool online;
@@ -28,5 +30,5 @@ private:
 	cv::KalmanFilter kf;
 	bool first_call = true, second_call = false;
 	ros::Publisher pub, debug_pub;
-	keypoint_3d_matching_msgs::Keypoint3d_list corrected_msg, debug_msg;
+	T corrected_msg, debug_msg;
 };

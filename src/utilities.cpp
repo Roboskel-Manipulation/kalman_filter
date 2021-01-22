@@ -1,4 +1,3 @@
-#include <vector>
 #include <string>
 #include <keypoint_3d_matching_msgs/Keypoint3d.h>
 #include <keypoint_3d_matching_msgs/Keypoint3d_list.h>

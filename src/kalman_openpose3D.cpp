@@ -1,18 +1,7 @@
 #include <ros/ros.h>
-#include <geometry_msgs/PointStamped.h>
 #include <keypoint_3d_matching_msgs/Keypoint3d_list.h>
 #include "std_msgs/Float64MultiArray.h"
-#include "std_msgs/MultiArrayLayout.h"
-#include "std_msgs/MultiArrayDimension.h"
 
-#include <vector>
-#include <string>
-#include <cmath>
-#include <cstdint>
-
-#include "cxcore.h"
-#include "cv.h"
-#include "highgui.h"
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/core.hpp>
 
@@ -57,7 +46,8 @@ keypoint_3d_matching_msgs::Keypoint3d_list keypointsStructure(keypoint_3d_matchi
 unsigned int type = CV_64FC1;
 ros::Publisher vel;
 
-KalmanFilterObj::KalmanFilterObj(float _freq, bool _online){
+template <typename T>
+KalmanFilterObj<T>::KalmanFilterObj(float _freq, bool _online){
 
 	int i;
 	ros::NodeHandle nh;
@@ -66,13 +56,14 @@ KalmanFilterObj::KalmanFilterObj(float _freq, bool _online){
 		printf("Message intervals: %lf\n",this->dT);
 	}
 	this->online = _online;
-	pub = nh.advertise<keypoint_3d_matching_msgs::Keypoint3d_list>("/kalman_points", 10000);
-	debug_pub = nh.advertise<keypoint_3d_matching_msgs::Keypoint3d_list>("/debug_kalman_points", 10000);
+	pub = nh.advertise<T>("/kalman_points", 10000);
+	debug_pub = nh.advertise<T>("/debug_kalman_points", 10000);
 	vel = nh.advertise<std_msgs::Float64MultiArray>("/velocity", 10000);
 }
 
 /* Initialize parameters for Kalman Filter */
-void KalmanFilterObj::Init(int size){
+template <typename T>
+void KalmanFilterObj<T>::Init(int size){
 	int i;
 
 	this->keypnt_num = size;
@@ -108,13 +99,14 @@ void KalmanFilterObj::Init(int size){
 	cv::setIdentity(kf.controlMatrix);
 }
 
-static double currentTime = 0.0, curdT = 0.0;
-static cv::Mat temp_vel; /* here we store previous velocity */
-static cv::Mat predicted, corrected; /* kalman predicted/corrected keypoints */
-static keypoint_3d_matching_msgs::Keypoint3d_list prev_keypoints; /* used to spot outliers */
-static cv::Mat was_outlier; /* true if previous keypoint measurement was an outlier */
+double currentTime = 0.0, curdT = 0.0;
+cv::Mat temp_vel; /* here we store previous velocity */
+cv::Mat predicted, corrected; /* kalman predicted/corrected keypoints */
+keypoint_3d_matching_msgs::Keypoint3d_list prev_keypoints; /* used to spot outliers */
+cv::Mat was_outlier; /* true if previous keypoint measurement was an outlier */
 
-void KalmanFilterObj::KalmanFilterCallback(const keypoint_3d_matching_msgs::Keypoint3d_list msg){
+template <typename T>
+void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 	
 	int i;
 	if(msg.keypoints.size() == 0){
@@ -293,3 +285,5 @@ void KalmanFilterObj::KalmanFilterCallback(const keypoint_3d_matching_msgs::Keyp
 		prev_keypoints.keypoints[i].points.point.z = x_t1.at<double>(3*i+2);
 	}
 }
+
+template class KalmanFilterObj<keypoint_3d_matching_msgs::Keypoint3d_list>;
