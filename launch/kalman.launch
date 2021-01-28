@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+
+	<include file='$(find kalman_filter)/launch/kalman_openpose3D.launch'>
+	</include>
+
+	<node name='movement_detection' type='raw_points_process.py' pkg='online_trajectory_process' output='screen'
+		respawn='false'>
+	</node>
+
+</launch>
