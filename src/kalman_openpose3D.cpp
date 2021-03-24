@@ -56,6 +56,11 @@ KalmanFilterObj<T>::KalmanFilterObj(float _freq, bool _online){
 		printf("Message intervals: %lf\n",this->dT);
 	}
 	this->online = _online;
+	nh.param("kalmanFilter/Rx", this->Rx, 0.0);
+	nh.param("kalmanFilter/Ry", this->Ry, 0.0);
+	nh.param("kalmanFilter/Rz", this->Rz, 0.0);
+	nh.param("kalmanFilter/Q", this->Q, 0.0);
+
 	pub = nh.advertise<T>("/kalman_points", 10000);
 	debug_pub = nh.advertise<T>("/debug_kalman_points", 10000);
 	vel = nh.advertise<std_msgs::Float64MultiArray>("/velocity", 10000);
@@ -87,12 +92,12 @@ void KalmanFilterObj<T>::Init(int size){
 	cv::setIdentity(kf.transitionMatrix);
 
 	for (i=0;i<=keypnt_num;i++){
-		kf.measurementNoiseCov.at<double>(3*i,3*i) = 0.005; /* R_x = 0.005 */
-		kf.measurementNoiseCov.at<double>(3*i+1,3*i+1) = 0.005; /* R_y = 0.005 */
-		kf.measurementNoiseCov.at<double>(3*i+2,3*i+2) = 0.003; /*R_z = 0.003 */
+		kf.measurementNoiseCov.at<double>(3*i,3*i) = this->Rx; /* R_x = 0.005 */
+		kf.measurementNoiseCov.at<double>(3*i+1,3*i+1) = this->Ry; /* R_y = 0.005 */
+		kf.measurementNoiseCov.at<double>(3*i+2,3*i+2) = this->Rz; /*R_z = 0.003 */
 	}
 
-	cv::setIdentity(kf.processNoiseCov, cv::Scalar(15e-3)); /* Q = 0.015 */
+	cv::setIdentity(kf.processNoiseCov, cv::Scalar(this->Q)); /* Q = 0.015 */
 	kf.measurementMatrix = cv::Mat::zeros(measLen, stateLen, type);
 	cv::setIdentity(kf.measurementMatrix);
 	cv::setIdentity(kf.errorCovPost, cv::Scalar::all(1)); /*TODO*/

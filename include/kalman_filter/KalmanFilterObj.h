@@ -16,6 +16,7 @@ public:
 	void Init(int size);
 	bool is3D;
 	bool online;
+	double Rx, Ry, Rz, Q;
 private: 
 	int measLen, stateLen, keypnt_num;
 	

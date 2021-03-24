@@ -37,9 +37,16 @@ KalmanFilterObj<T>::KalmanFilterObj(float _freq, bool _online){
 		printf("Message intervals: %lf\n",this->dT);
 	}
 	this->online = _online;
+	nh.param("kalmanFilter/Rx", this->Rx, 0.0);
+	nh.param("kalmanFilter/Ry", this->Ry, 0.0);
+	nh.param("kalmanFilter/Rz", this->Rz, 0.0);
+	nh.param("kalmanFilter/Q", this->Q, 0.0);
+
 	pub = nh.advertise<geometry_msgs::PointStamped>("/kalman_points", 10000);
 	debug_pub = nh.advertise<geometry_msgs::PointStamped>("/debug_kalman_points", 10000);
 	vel = nh.advertise<std_msgs::Float64MultiArray>("/velocity", 10000);
+	Init();
+
 }
 
 /* Initialize parameters for Kalman Filter */
@@ -66,11 +73,11 @@ void KalmanFilterObj<T>::Init(){
 	cv::setIdentity(kf.transitionMatrix);
 
 
-	kf.measurementNoiseCov.at<double>(0,0) = 0.005; /* R_x = 0.005 */
-	kf.measurementNoiseCov.at<double>(1,1) = 0.01;  /* R_y = 0.01  */
-	kf.measurementNoiseCov.at<double>(2,2) = 0.003; /* R_z = 0.003  */
+	kf.measurementNoiseCov.at<double>(0,0) = this->Rx; /* R_x = 0.005 */
+	kf.measurementNoiseCov.at<double>(1,1) = this->Ry;  /* R_y = 0.01  */
+	kf.measurementNoiseCov.at<double>(2,2) = this->Rz; /* R_z = 0.003  */
 
-	cv::setIdentity(kf.processNoiseCov, cv::Scalar(15e-3)); /* Q = 0.015 */
+	cv::setIdentity(kf.processNoiseCov, cv::Scalar(this->Q)); /* Q = 0.015 */
 	kf.measurementMatrix = cv::Mat::zeros(measLen, stateLen, type);
 	cv::setIdentity(kf.measurementMatrix);
 	cv::setIdentity(kf.errorCovPost, cv::Scalar::all(1)); /*TODO*/
@@ -112,8 +119,10 @@ void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 		
 		/*initialization*/
 
-		Init();
-		
+		double time_now = ros::Time::now().toSec();
+		double time_after = ros::Time::now().toSec();
+
+		std::cout << time_after -time_now << std::endl;
 		x_t2.at<double>(0) = msg.point.x;
 		x_t2.at<double>(1) = msg.point.y;
 		x_t2.at<double>(2) = msg.point.z;
@@ -141,6 +150,7 @@ void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 		velocity = velocity * (1/this->dT); /* velocity = (x_t1 - x_t2)/dT */
 		velocity.copyTo(temp_vel);
 
+		ROS_INFO_STREAM("point " << msg << "\n");
 		pub.publish(msg);
 
 		kf.statePost = state;

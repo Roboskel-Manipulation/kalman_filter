@@ -1,8 +1,22 @@
+<?xml version="1.0"?>
 <launch>
-	<node pkg="online_trajectory_process" type="raw_points_process.py" name='points_preprocessing' respawn='false' output='screen'>/
-	</node>
+	<arg name='kalman_before_cleaning' default="true"/>
 
-	<include file='$(find kalman_filter)/launch/kalman_points.launch'>
-	</include>
+	<group if="$(arg kalman_before_cleaning)">
+		<include file='$(find kalman_filter)/launch/kalman_openpose3D.launch'>
+		</include>
 
+		<!-- SET THE SUBSCRIBE TOPIC IN THE raw_points_proccess.py NODE TO "kalman_poitns" -->
+		<node name='movement_detection' type='raw_points_process.py' pkg='online_trajectory_process' output='screen' respawn='false'>
+		</node>
+	</group>
+
+	<group unless="$(arg kalman_before_cleaning)">
+		<node pkg="online_trajectory_process" type="raw_points_process.py" name='points_preprocessing' respawn='false' output='screen'>
+		</node>
+
+		<include file='$(find kalman_filter)/launch/kalman_points.launch'>
+		</include>
+
+	</group>
 </launch>

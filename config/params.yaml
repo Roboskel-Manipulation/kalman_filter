@@ -1,4 +1,18 @@
-# keypoint_topic: "/trajectory_points"
-keypoint_topic: "/transform_topic"
+# Set keypoint_topic to '/transform_topic' if you want
+# to apply kalman filtering to the 3D OpenPose points
+# If you want to apply it to the filtered (outlier removal)
+# points, then set the keypoint_topic to '/trajectory_points'
+keypoint_topic: "/trajectory_points"
+
+# Set online to 'true' if the points are received at the OpenPose
+# frequency (~22Hz using Quadro TRX 4000). Otherwise set it to 'false'
+# and specify the frequency at which the points are received (30 or 60 
+# depending on the frequency of the sensor)
+online: true
 frequency: 30
-online: false
+
+# R and Q matrices for the kalman filter
+Rx: 0.02
+Ry: 0.04
+Rz: 0.012
+Q: 0.005
