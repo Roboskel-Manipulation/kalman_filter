@@ -1,0 +1,8 @@
+<launch>
+	<node pkg="online_trajectory_process" type="raw_points_process.py" name='points_preprocessing' respawn='false' output='screen'>/
+	</node>
+
+	<include file='$(find kalman_filter)/launch/kalman_points.launch'>
+	</include>
+
+</launch>
