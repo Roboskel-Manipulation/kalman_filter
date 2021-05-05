@@ -89,9 +89,6 @@ template <class T>
 void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 
 	currentTime = msg.header.stamp.toSec(); /* time in seconds */
-	this->count += 1;
-
-	std::cout << this->count << std::endl;
 
 	curdT = currentTime - this->prevTime;
 
@@ -159,8 +156,9 @@ void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 	kf.controlMatrix.at<double>(1, 1) = timer.at<double>(1);
 	kf.controlMatrix.at<double>(2, 2) = timer.at<double>(2);
 
-	/* "save" 3rd point by increasing the measurement noise covariance 
-		otherwise, use the user defined covariance */
+	/* Increase the measurement noise for the third point because Kalman gain is
+	   initialized to 1 and the third filtered point is the almost the same with
+	   the measurement. For the rest points, use the user-defined measurement noise */
 	if (this->third_call){
 		kf.measurementNoiseCov.at<double>(0, 0) = 1;
 		kf.measurementNoiseCov.at<double>(1, 1) = 1;
