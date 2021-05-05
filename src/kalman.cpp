@@ -20,10 +20,6 @@ P: estimation error covariance
 
 ****/
 
-/* change if needed */
-#define DIST_1 0.10
-#define DIST_2 0.18
-
 unsigned int type = CV_64FC1;
 ros::Publisher vel;
 
@@ -72,15 +68,14 @@ void KalmanFilterObj<T>::Init(){
 
 	cv::setIdentity(kf.transitionMatrix);
 
+	kf.measurementNoiseCov.at<double>(0,0) = this->Rx;
+	kf.measurementNoiseCov.at<double>(1,1) = this->Ry;
+	kf.measurementNoiseCov.at<double>(2,2) = this->Rz;
 
-	kf.measurementNoiseCov.at<double>(0,0) = this->Rx; /* R_x = 0.005 */
-	kf.measurementNoiseCov.at<double>(1,1) = this->Ry;  /* R_y = 0.01  */
-	kf.measurementNoiseCov.at<double>(2,2) = this->Rz; /* R_z = 0.003  */
-
-	cv::setIdentity(kf.processNoiseCov, cv::Scalar(this->Q)); /* Q = 0.015 */
+	cv::setIdentity(kf.processNoiseCov, cv::Scalar(this->Q));
 	kf.measurementMatrix = cv::Mat::zeros(measLen, stateLen, type);
 	cv::setIdentity(kf.measurementMatrix);
-	cv::setIdentity(kf.errorCovPost, cv::Scalar::all(1)); /*TODO*/
+	cv::setIdentity(kf.errorCovPost, cv::Scalar::all(1));
 	cv::setIdentity(kf.controlMatrix);
 }
 
@@ -94,6 +89,9 @@ template <class T>
 void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 
 	currentTime = msg.header.stamp.toSec(); /* time in seconds */
+	this->count += 1;
+
+	std::cout << this->count << std::endl;
 
 	curdT = currentTime - this->prevTime;
 
@@ -103,11 +101,11 @@ void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 		return;
 	}
 
-	std::cout << "[Current Difference: "<<std::setprecision(25)<<curdT<<"]"<<std::endl;
 	this->prevTime = currentTime;
-
-	if(this->online)
+	if(this->online){
+		std::cout << "[Current Difference: " << std::setprecision(25) << curdT << "]" << std::endl;
 		this->dT = curdT;
+	}
 
 	if(this->first_call){
 		this->first_call = false;
@@ -117,12 +115,6 @@ void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 
 		ROS_INFO("First Callback!");
 		
-		/*initialization*/
-
-		double time_now = ros::Time::now().toSec();
-		double time_after = ros::Time::now().toSec();
-
-		std::cout << time_after -time_now << std::endl;
 		x_t2.at<double>(0) = msg.point.x;
 		x_t2.at<double>(1) = msg.point.y;
 		x_t2.at<double>(2) = msg.point.z;
@@ -135,6 +127,7 @@ void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 	if(this->second_call){
 		this->second_call = false;
 		ROS_INFO("Second Callback!");
+
 		/* initialize state and velocity */
 		state.at<double>(0) = msg.point.x;
 		state.at<double>(1) = msg.point.y;
@@ -150,7 +143,6 @@ void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 		velocity = velocity * (1/this->dT); /* velocity = (x_t1 - x_t2)/dT */
 		velocity.copyTo(temp_vel);
 
-		ROS_INFO_STREAM("point " << msg << "\n");
 		pub.publish(msg);
 
 		kf.statePost = state;
@@ -162,11 +154,23 @@ void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 	measurement.at<double>(2) = msg.point.z;
 
 	/* fix controlMatrix with current dT */
-
 	timer = timer + this->dT;
 	kf.controlMatrix.at<double>(0, 0) = timer.at<double>(0);
 	kf.controlMatrix.at<double>(1, 1) = timer.at<double>(1);
 	kf.controlMatrix.at<double>(2, 2) = timer.at<double>(2);
+
+	/* "save" 3rd point by increasing the measurement noise covariance 
+		otherwise, use the user defined covariance */
+	if (this->third_call){
+		kf.measurementNoiseCov.at<double>(0, 0) = 1;
+		kf.measurementNoiseCov.at<double>(1, 1) = 1;
+		kf.measurementNoiseCov.at<double>(2, 2) = 1;
+	}
+	else{
+		kf.measurementNoiseCov.at<double>(0,0) = this->Rx;
+		kf.measurementNoiseCov.at<double>(1,1) = this->Ry;
+		kf.measurementNoiseCov.at<double>(2,2) = this->Rz;
+	}
 
 	/* predict state */
 	predicted = kf.predict(velocity);
@@ -175,7 +179,7 @@ void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 	corrected = kf.correct(measurement);
 
 	/* create new point msg with corrected state */
-	this->corrected_msg.header = msg.header; // maybe change timestamp to ros::Time::now
+	this->corrected_msg.header = msg.header;
 	this->corrected_msg.point.x = corrected.at<double>(0);
 	this->corrected_msg.point.y = corrected.at<double>(1);
 	this->corrected_msg.point.z = corrected.at<double>(2);
@@ -188,7 +192,6 @@ void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 	debug_pub.publish(this->debug_msg);
 
 	/* calculate new velocity */
-
 	x_t1.copyTo(x_t2); // x_t2 <- x_t1
 	// measurement.copyTo(x_t1); // x_t1 <- measurement
 

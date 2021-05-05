@@ -8,7 +8,7 @@ keypoint_topic: "/trajectory_points"
 # frequency (~22Hz using Quadro TRX 4000). Otherwise set it to 'false'
 # and specify the frequency at which the points are received (30 or 60 
 # depending on the frequency of the sensor)
-online: true
+online: false
 frequency: 30
 
 # R and Q matrices for the kalman filter

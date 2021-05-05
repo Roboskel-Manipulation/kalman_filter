@@ -24,9 +24,5 @@ include_directories(
 	${OpenCV_INCLUDE_DIRS}
 )
 
-add_executable(kalman_openpose3D src/main_openpose.cpp src/kalman_openpose3D.cpp src/utilities.cpp)
-target_link_libraries(kalman_openpose3D ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-
-
-add_executable(kalman_points src/main_points.cpp src/kalman_points.cpp)
+add_executable(kalman_points src/main.cpp src/kalman.cpp)
 target_link_libraries(kalman_points ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})

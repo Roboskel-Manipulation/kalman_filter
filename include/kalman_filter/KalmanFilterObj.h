@@ -29,7 +29,8 @@ private:
 	cv::Mat timer;
 	cv::Mat window; /* will be used to detect outliers, window size == 5 */
 	cv::KalmanFilter kf;
-	bool first_call = true, second_call = false;
+	bool first_call = true, second_call = false, third_call = true;
+	int count = 0;
 	ros::Publisher pub, debug_pub;
 	T corrected_msg, debug_msg;
 };
