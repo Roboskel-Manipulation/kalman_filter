@@ -46,6 +46,7 @@ KalmanFilterObj<T>::KalmanFilterObj(float _freq, bool _online){
 	debug_pub = nh.advertise<geometry_msgs::PointStamped>("/debug_kalman_points", 10000);
 	vel = nh.advertise<std_msgs::Float64MultiArray>("/velocity", 10000);
 	Init();
+	ROS_INFO("Ready to accept points");
 
 }
 
@@ -122,7 +123,6 @@ void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 		double time_now = ros::Time::now().toSec();
 		double time_after = ros::Time::now().toSec();
 
-		std::cout << time_after -time_now << std::endl;
 		x_t2.at<double>(0) = msg.point.x;
 		x_t2.at<double>(1) = msg.point.y;
 		x_t2.at<double>(2) = msg.point.z;
@@ -150,7 +150,6 @@ void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 		velocity = velocity * (1/this->dT); /* velocity = (x_t1 - x_t2)/dT */
 		velocity.copyTo(temp_vel);
 
-		ROS_INFO_STREAM("point " << msg << "\n");
 		pub.publish(msg);
 
 		kf.statePost = state;
