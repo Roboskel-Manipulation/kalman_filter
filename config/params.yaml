@@ -1,14 +1,13 @@
-# Set keypoint_topic to '/transform_topic' if you want
-# to apply kalman filtering to the 3D OpenPose points
-# If you want to apply it to the filtered (outlier removal)
-# points, then set the keypoint_topic to '/trajectory_points'
+# Set keypoint_topic to the name of the topic in which the
+# /geometry_msgs/PointStamped msgs are published. Default is 
+# set to '/trajectory_points'
 keypoint_topic: "/trajectory_points"
 
-# Set online to 'true' if the points are received at the OpenPose
-# frequency (~22Hz using Quadro TRX 4000). Otherwise set it to 'false'
-# and specify the frequency at which the points are received (30 or 60 
-# depending on the frequency of the sensor)
-online: false
+# Set variable_timestamp to 'true' if you want to use the timestamp of the
+# points in the prediction phase. Otherwise set it to false and the value of
+# the 'frequency' parameter will be used accordingly
+
+variable_timestamp: false
 frequency: 30
 
 # R and Q matrices for the kalman filter

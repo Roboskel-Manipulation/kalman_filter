@@ -42,6 +42,7 @@ KalmanFilterObj<T>::KalmanFilterObj(float _freq, bool _online){
 	debug_pub = nh.advertise<geometry_msgs::PointStamped>("/debug_kalman_points", 10000);
 	vel = nh.advertise<std_msgs::Float64MultiArray>("/velocity", 10000);
 	Init();
+	ROS_INFO("Ready to accept points");
 
 }
 
