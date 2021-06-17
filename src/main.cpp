@@ -10,11 +10,10 @@ int main(int argc, char** argv){
 	ros::init(argc, argv, "kalmanFilter");
 	ros::NodeHandle nh;
 
-	std::string keypoint_topic;
+	std::string keypoint_topic = "/trajectory_points";
 	int freq;
 	bool online;
 
-	nh.param("kalmanFilter/keypoint_topic", keypoint_topic, std::string("/raw_points_online"));
 	nh.param("kalmanFilter/frequency", freq, 30);
 	nh.param("kalmanFilter/online", online, false);
 

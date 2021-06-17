@@ -6,10 +6,9 @@
 
 ### Description
 A ROS package with an implemented kalman filter, using the OpenCV [KalmanFilter class](https://docs.opencv.org/master/dd/d6a/classcv_1_1KalmanFilter.html#a077d73eb075b00779dc009a9057c27c3). \
-The main node accepts `geometry_msgs/PointStamped` points and it applies a Kalman filter. The input topic is defined in the config file `params.yaml`. The filtered points are published to the topic `/kalman_points`.
+The main node accepts `geometry_msgs/PointStamped` points and it applies a Kalman filter. The filtered points are published to the topic `/kalman_points`.
 
 ### Parameters
-* `keypoint_topic`: Input topic
 * `variable_timestamp`: True if the prediction is based on the timestamp of the messages (default: False)
 * `frequency`: Used in the prediction only if `variable_timestamp` is set to False. (default: 30 => visual sensor's frequency)
 * `Rx, Ry, Rz`: Noise covariance matrix
