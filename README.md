@@ -10,8 +10,8 @@ The main node accepts `geometry_msgs/PointStamped` points and it applies a Kalma
 
 ### Parameters
 * `keypoint_topic`: Input topic
-* `online`: True if the prediction is based on the timestamp of the messages (default: False)
-* `frequency`: Used in the prediction only if `online` is set to False. (default: 30 => visual sensor's frequency)
+* `variable_timestamp`: True if the prediction is based on the timestamp of the messages (default: False)
+* `frequency`: Used in the prediction only if `variable_timestamp` is set to False. (default: 30 => visual sensor's frequency)
 * `Rx, Ry, Rz`: Noise covariance matrix
 * `Q`: Process covariance matrix
 
