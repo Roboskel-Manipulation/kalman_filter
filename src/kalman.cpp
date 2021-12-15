@@ -157,20 +157,6 @@ void KalmanFilterObj<T>::KalmanFilterCallback(const T msg){
 	kf.controlMatrix.at<double>(1, 1) = timer.at<double>(1);
 	kf.controlMatrix.at<double>(2, 2) = timer.at<double>(2);
 
-	/* Increase the measurement noise for the third point because Kalman gain is
-	   initialized to 1 and the third filtered point is the almost the same with
-	   the measurement. For the rest points, use the user-defined measurement noise */
-	if (this->third_call){
-		kf.measurementNoiseCov.at<double>(0, 0) = 1;
-		kf.measurementNoiseCov.at<double>(1, 1) = 1;
-		kf.measurementNoiseCov.at<double>(2, 2) = 1;
-	}
-	else{
-		kf.measurementNoiseCov.at<double>(0,0) = this->Rx;
-		kf.measurementNoiseCov.at<double>(1,1) = this->Ry;
-		kf.measurementNoiseCov.at<double>(2,2) = this->Rz;
-	}
-
 	/* predict state */
 	predicted = kf.predict(velocity);
 
